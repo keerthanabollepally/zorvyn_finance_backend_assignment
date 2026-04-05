@@ -1,20 +1,21 @@
 # Finance Backend
 
-## Author & submission 
+## Author & submission (fill in for your assignment)
 
 | Field | Your value |
 |--------|------------|
-| **Name** | *KEERTHANA Bollepally* |
-| **Email / contact** | *bkeerthanaraj4@gmail.com* |
-| **Repository** | *https://github.com/your-username/your-repo*|
+| **Name** | *Your full name* |
+| **Email / contact** | *your.email@example.com* |
+| **Repository** | *https://github.com/your-username/your-repo* (or “submitted as ZIP”) |
 
 ## Tested environment
 
 | Item | Value |
 |------|--------|
 | **OS** | Windows 10 / 11 |
-| **Python** | 3.11.9 |
+| **Python** | Run `python --version` in PowerShell and paste here (e.g. `Python 3.11.9`) |
 
+*Edit the table cells above in this file (`README.md`) before you submit.*
 
 ---
 
@@ -115,21 +116,66 @@ uvicorn app.main:app --reload
 
 **Swagger UI**: after starting the server, open `/docs` to see grouped tags (users, records, dashboard), try auth via **Authorize** with `Bearer <token>`, and execute requests. A screenshot for your write-up can be the `/docs` page showing those groups and a sample `POST /users/login` response.
 
+### Deploy (free tier — Render + PostgreSQL)
+
+Cloud hosts **do not keep SQLite files** reliably. Use **PostgreSQL** on the host and set **`DATABASE_URL`**.
+
+**1. Push your code to a public GitHub repo** (root should contain `requirements.txt`, `app/`, and `Procfile`).
+
+**2. Create a PostgreSQL database on Render**
+
+- [Render Dashboard](https://dashboard.render.com) → **New +** → **PostgreSQL**
+- Pick the **Free** plan, create the database, wait until it is **available**.
+
+**3. Create a Web Service**
+
+- **New +** → **Web Service** → connect the **same GitHub repo**.
+- **Runtime:** Python  
+- **Build command:** `pip install -r requirements.txt`  
+- **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`  
+  (Same as `Procfile`; Render reads `$PORT` automatically.)
+
+**4. Environment variables** (Web Service → **Environment**)
+
+| Key | Value |
+|-----|--------|
+| `DATABASE_URL` | Copy from your Render Postgres: **Internal Database URL** (paste as-is; the app fixes `postgres://` → `postgresql://`). |
+| `JWT_SECRET_KEY` | Long random string (e.g. 32+ characters). **Required** on the internet. |
+| `DATABASE_SSL_REQUIRE` | If the DB connection fails with an SSL error, set to `true`. Many internal Render URLs work without it. |
+
+**5. Deploy**
+
+- Save; Render builds and deploys. Open your service URL + **`/docs`** (e.g. `https://your-service.onrender.com/docs`). That is the link you can put under **“Live Demo or API Documentation URL”** in your submission.
+
+**Cold starts:** Free web services **spin down** after idle time; the first request after sleep can take ~30–60 seconds.
+
+**First admin on production:** Sign up via `/docs`, then in any PostgreSQL client connected to the same database run:
+
+```sql
+UPDATE "user" SET role = 'admin' WHERE email = 'your-signup-email@example.com';
+```
+
+(PostgreSQL table name may be `user` — quoted because it is a reserved word in SQL.) Log in again to get a new JWT.
+
 ### Environment variables
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | Default `sqlite:///./finance.db`. Example PostgreSQL: `postgresql+psycopg2://user:pass@localhost:5432/finance` |
+| `DATABASE_URL` | Default `sqlite:///./finance.db`. PostgreSQL: full URL (app includes `psycopg2-binary`). Render’s **Internal** URL is fine. |
+| `DATABASE_SSL_REQUIRE` | Set to `true` if Postgres requires SSL (some external URLs). |
 | `JWT_SECRET_KEY` | Secret for signing JWTs (set in production) |
 | `FINANCE_SKIP_DB_INIT` | Set to `1` for tests only (skips lifespan migrations on the default engine) |
 
-### Creating the first admin
+### Creating the first admin (local SQLite)
 
-After signup, promote your user in the DB, e.g. SQLite:
+After signup, promote your user, e.g.:
 
 ```sql
 UPDATE user SET role = 'admin' WHERE email = 'you@example.com';
 ```
+
+On **PostgreSQL**, use a quoted table name: `UPDATE "user" SET role = 'admin' WHERE email = '...';`  
+Or run `python scripts/promote_admin.py you@example.com` (uses local `finance.db` only).
 
 Then log in again to receive a token with admin permissions.
 
@@ -145,7 +191,7 @@ Includes happy-path API tests and a **unit-style** check for **net balance** / S
 
 - **JWT vs OAuth2/OIDC**: Simpler to ship and demo; no refresh tokens or revocation list (acceptable for an assignment; production would add refresh flows or shorter TTLs).
 - **SQLite default**: Zero setup; PostgreSQL is a connection-string change for real deployments.
-- **Trend SQL**: Implemented with SQLite `strftime`; PostgreSQL would use `date_trunc` for cleaner week/month boundaries.
+- **Trend SQL**: Uses SQLite `strftime` locally; **PostgreSQL** uses `to_char` for month / ISO week (see `dashboard_service._trend_date_group`).
 - **Rate limiting**: IP-based (`get_remote_address`); behind proxies, configure trusted headers or a different key function.
 
 ## Project layout
@@ -172,5 +218,6 @@ finance_backend/
 │       └── auth_middleware.py
 ├── tests/
 ├── requirements.txt
+├── Procfile
 └── README.md
 ```

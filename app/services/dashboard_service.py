@@ -101,12 +101,21 @@ def category_summary(session: Session, actor: User, *, user_id: int | None = Non
     ]
 
 
+def _trend_date_group(session: Session, granularity: str):
+    """SQLite uses strftime; PostgreSQL (e.g. Render) uses to_char."""
+    dialect = session.get_bind().dialect.name
+    if dialect == "postgresql":
+        if granularity == "month":
+            return func.to_char(FinancialRecord.date, "YYYY-MM")
+        return func.to_char(FinancialRecord.date, 'IYYY-"W"IW')
+    if granularity == "month":
+        return func.strftime("%Y-%m", FinancialRecord.date)
+    return func.strftime("%Y-W%W", FinancialRecord.date)
+
+
 def trend(session: Session, actor: User, granularity: str, *, user_id: int | None = None):
     conds = _conditions(actor, user_id=user_id, date_from=None, date_to=None)
-    if granularity == "month":
-        date_group = func.strftime("%Y-%m", FinancialRecord.date)
-    else:
-        date_group = func.strftime("%Y-W%W", FinancialRecord.date)
+    date_group = _trend_date_group(session, granularity)
     income_sum = func.coalesce(
         func.sum(case((FinancialRecord.type == RecordType.income, FinancialRecord.amount), else_=0)),
         0.0,
