@@ -1,21 +1,21 @@
 # Finance Backend
 
-## Author & submission 
+## Author & submission (fill in for your assignment)
 
-| Field | Value |
+| Field | Your value |
 |--------|------------|
-| **Name** | *KEERTHANA BOLLEPALLY* |
-| **Email / contact** | *bkeerthanaraj4@gmail.com* |
-| **Repository** | *(https://github.com/keerthanabollepally/zorvyn_finance_backend_assignment)* |
+| **Name** | *Your full name* |
+| **Email / contact** | *your.email@example.com* |
+| **Repository** | *https://github.com/your-username/your-repo* (or “submitted as ZIP”) |
 
 ## Tested environment
 
 | Item | Value |
 |------|--------|
 | **OS** | Windows 10 / 11 |
-| **Python** | Python 3.11.9 |
+| **Python** | Run `python --version` in PowerShell and paste here (e.g. `Python 3.11.9`) |
 
-
+*Edit the table cells above in this file (`README.md`) before you submit.*
 
 ---
 
@@ -137,14 +137,17 @@ Cloud hosts **do not keep SQLite files** reliably. Use **PostgreSQL** on the hos
 - **Build command:** `pip install --upgrade pip setuptools wheel && pip install -r requirements.txt`  
 - **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`  
   (Same as `Procfile`; Render reads `$PORT` automatically.)  
-- **`runtime.txt`** in the repo pins **Python 3.11.9** (helps avoid broken builds on very new Python versions).
+- **`.python-version`** in the repo (line: `3.11.9`) tells Render which Python to use. If Render still picks **3.14**, add **`PYTHON_VERSION` = `3.11.9`** in **Environment** (that overrides everything).
 
-**If the build still fails:** open the Web Service → **Logs** → find the **red** error (often `pip` or `error:`). Common fixes: wrong **Root directory**, or set environment variable **`PYTHON_VERSION`** to `3.11.9` in Render if `runtime.txt` is ignored.
+**If the build fails with `pydantic-core` / `maturin` / Rust / read-only:** you are on **Python 3.14** without a compatible wheel — set **`PYTHON_VERSION`** to **`3.11.9`** and redeploy (clear build cache).
+
+**If the build still fails:** open **Logs** and check **Root directory** (must contain `.python-version`, `requirements.txt`, and `app/`).
 
 **4. Environment variables** (Web Service → **Environment**)
 
 | Key | Value |
 |-----|--------|
+| **`PYTHON_VERSION`** | **`3.11.9`** — **Required on Render** if your build uses Python 3.14 (default). Without this, `pydantic-core` tries to compile Rust and the build fails. The repo also includes **`.python-version`** (`3.11.9`) so new deploys pick 3.11 automatically when the file is at the service **root**. |
 | `DATABASE_URL` | Copy from your Render Postgres: **Internal Database URL** (paste as-is; the app fixes `postgres://` → `postgresql://`). |
 | `JWT_SECRET_KEY` | Long random string (e.g. 32+ characters). **Required** on the internet. |
 | `DATABASE_SSL_REQUIRE` | If the DB connection fails with an SSL error, set to `true`. Many internal Render URLs work without it. |
@@ -226,6 +229,7 @@ finance_backend/
 ├── tests/
 ├── requirements.txt
 ├── requirements-dev.txt
+├── .python-version
 ├── runtime.txt
 ├── Procfile
 └── README.md
