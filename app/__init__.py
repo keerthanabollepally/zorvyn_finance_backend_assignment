@@ -1,0 +1,1 @@
+"""Finance backend application package."""
