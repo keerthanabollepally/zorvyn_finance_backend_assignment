@@ -1,21 +1,21 @@
 # Finance Backend
 
-## Author & submission (fill in for your assignment)
+## Author & submission 
 
-| Field | Your value |
+| Field | Value |
 |--------|------------|
-| **Name** | *Your full name* |
-| **Email / contact** | *your.email@example.com* |
-| **Repository** | *https://github.com/your-username/your-repo* (or “submitted as ZIP”) |
+| **Name** | *KEERTHANA BOLLEPALLY* |
+| **Email / contact** | *bkeerthanaraj4@gmail.com* |
+| **Repository** | *(https://github.com/keerthanabollepally/zorvyn_finance_backend_assignment)* |
 
 ## Tested environment
 
 | Item | Value |
 |------|--------|
 | **OS** | Windows 10 / 11 |
-| **Python** | Run `python --version` in PowerShell and paste here (e.g. `Python 3.11.9`) |
+| **Python** | Python 3.11.9 |
 
-*Edit the table cells above in this file (`README.md`) before you submit.*
+
 
 ---
 
