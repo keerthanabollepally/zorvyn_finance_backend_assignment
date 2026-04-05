@@ -111,6 +111,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+(For **tests**, also: `pip install -r requirements-dev.txt`.)
+
 - **Interactive docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (Swagger UI)  
 - **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
@@ -131,9 +133,13 @@ Cloud hosts **do not keep SQLite files** reliably. Use **PostgreSQL** on the hos
 
 - **New +** → **Web Service** → connect the **same GitHub repo**.
 - **Runtime:** Python  
-- **Build command:** `pip install -r requirements.txt`  
+- **Root directory:** leave empty if `requirements.txt` is at the **repo root**. If GitHub shows your code inside a folder (e.g. `finance_backend/`), set **Root directory** to that folder.  
+- **Build command:** `pip install --upgrade pip setuptools wheel && pip install -r requirements.txt`  
 - **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`  
-  (Same as `Procfile`; Render reads `$PORT` automatically.)
+  (Same as `Procfile`; Render reads `$PORT` automatically.)  
+- **`runtime.txt`** in the repo pins **Python 3.11.9** (helps avoid broken builds on very new Python versions).
+
+**If the build still fails:** open the Web Service → **Logs** → find the **red** error (often `pip` or `error:`). Common fixes: wrong **Root directory**, or set environment variable **`PYTHON_VERSION`** to `3.11.9` in Render if `runtime.txt` is ignored.
 
 **4. Environment variables** (Web Service → **Environment**)
 
@@ -182,6 +188,7 @@ Then log in again to receive a token with admin permissions.
 ## Tests
 
 ```bash
+pip install -r requirements-dev.txt
 pytest
 ```
 
@@ -218,6 +225,8 @@ finance_backend/
 │       └── auth_middleware.py
 ├── tests/
 ├── requirements.txt
+├── requirements-dev.txt
+├── runtime.txt
 ├── Procfile
 └── README.md
 ```
